@@ -36,6 +36,14 @@ using namespace MP4;
 STSZ::STSZ( void )
 {
     this->_type.append( "STSZ" );
+    m_sampleSizes = new std::vector< uint32_t >();
+    m_sampleSizes->clear();
+    m_sampleSize = 0;
+}
+
+STSZ::~STSZ()
+{
+    delete m_sampleSizes;
 }
 
 std::string STSZ::description( void )
@@ -49,5 +57,17 @@ std::string STSZ::description( void )
 
 void STSZ::processData( MP4::BinaryStream * stream, size_t length )
 {
-    stream->ignore( length );
+    stream->readUnsignedChar();                                           //Version
+    char flags[3];
+    memset( flags, 0, 3 );
+    stream->read( ( char* )flags, 3 );                                    //Flags pad
+    m_sampleSize = stream->readBigEndianUnsignedInteger();                //Sample size
+    uint32_t sampleCount = stream->readBigEndianUnsignedInteger();        //Sample count
+    for ( uint32_t i = 0; i < sampleCount; ++i )
+    {
+      uint32_t singleSampleSize = stream->readBigEndianUnsignedInteger(); //Sample size table
+      m_sampleSizes->push_back( singleSampleSize );
+    }
+
+    (void)length; //unused
 }

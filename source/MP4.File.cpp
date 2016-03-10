@@ -31,6 +31,10 @@
 
 #include "MP4.File.h"
 
+#include "MP4.STSZ.h"
+#include "MP4.MDAT.h"
+#include "MP4.STCO.h"
+
 using namespace MP4;
 
 std::string File::description( void )
@@ -46,4 +50,38 @@ std::string File::description( void )
     }
     
     return s;
+}
+
+void File::generateADTS()
+{
+    std::string atom = "STCO";
+    Atom *stco = findChild( atom );
+    uint32_t dataOffset = 0;
+    if ( stco )
+    {
+        dataOffset = ( ( MP4::STCO* )stco )->getDataOffset();
+    }
+    if ( dataOffset == 0 )
+    {
+        return;
+    }
+
+    atom = "STSZ";
+    Atom *stsz = findChild( atom );
+    std::vector< uint32_t > *sampleSizes = NULL;
+    if ( stsz )
+    {
+        sampleSizes = ( ( MP4::STSZ* )stsz )->getSampleSizes();
+    }
+    if ( sampleSizes == NULL )
+    {
+        return;
+    }
+
+    atom = "MDAT";
+    Atom *mdat = findChild( atom );
+    if ( mdat )
+    {
+        ( ( MP4::MDAT* )mdat )->generateAAC( dataOffset, sampleSizes );
+    }
 }

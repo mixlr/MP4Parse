@@ -42,6 +42,7 @@ namespace MP4
     {
         private:
             
+            uint32_t m_dataOffset;
             
         protected:
             
@@ -52,6 +53,7 @@ namespace MP4
             
             std::string description( void );
             void processData( MP4::BinaryStream * stream, size_t length );
+            uint32_t getDataOffset() const { return m_dataOffset; }
     };
 }
 
