@@ -337,6 +337,8 @@ Parser::Parser( char * filename )
     }
     
     std::cout << this->_file->description();
+
+    this->_file->generateADTS();
 }
 
 Parser::~Parser( void )

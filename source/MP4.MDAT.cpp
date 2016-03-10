@@ -36,6 +36,8 @@ using namespace MP4;
 MDAT::MDAT( void )
 {
     this->_type.append( "MDAT" );
+    _stream = NULL;
+    _length = 0;
 }
 
 std::string MDAT::description( void )
@@ -49,5 +51,57 @@ std::string MDAT::description( void )
 
 void MDAT::processData( MP4::BinaryStream * stream, size_t length )
 {
+    _stream = stream;
+    _length = length;
+
     stream->ignore( length );
+}
+
+void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes ) const
+{
+    if ( _length == 0 || _stream == NULL )
+    {
+        return;
+    }
+
+    //set the stream to good state and seek to where the data is in stream
+    _stream->clear();
+    _stream->seekg( dataOffset );
+
+    const size_t bufferSize = 4096; //TODO compute max sample size
+    char data[ bufferSize ];
+    char adtsHeader[ 7 ];
+
+    std::ofstream outfile( "testdata.aac", std::ofstream::binary );
+    for ( size_t s = 0; s < sampleSizes->size(); ++s )
+    {
+        uint64_t nextPos = sampleSizes->at( s );
+        _stream->read( data, nextPos );
+        generateADTS( adtsHeader, nextPos );
+        outfile.write( adtsHeader, 7 );
+        outfile.write( data, nextPos );
+    }
+}
+
+void MDAT::generateADTS( char *adtsHeader, uint64_t sampleSize ) const
+{
+    uint64_t ADTS = 0;                  // Using lowest 56 bits
+    ADTS |= ( (uint64_t)0xFFF << 44 );  // First 12 bits (syncword)
+                                        // 13th - 15th bits (MPEG4/Layer left as 0)
+    ADTS |= ( (uint64_t)1 << 40 );      // 16th bit (CRC flag)
+    ADTS |= ( (uint64_t)1 << 38 );      // 17th & 18th bits (AOT minus 1) TODO
+    ADTS |= ( (uint64_t)4 << 34 );      // 19th - 22nd bits (Sample rate)
+                                        // 23rd bit (Private bit left as 0)
+    ADTS |= ( (uint64_t)2 << 30 );      // 24th - 26th bits (Channel config) TODO
+                                        // 27th - 30th bits (Originality/Home/Copyrighted/Copyright bit left as 0)
+    ADTS |= ( (uint64_t)((7 + sampleSize) << 13) );  // 31st - 43rd bits (Frame size + header size 7)
+    ADTS |= ( (uint64_t)2047 << 2 );    // 44th - 54th bits (Buffer fullness)
+    //ADTS |= ( (uint64_t)0 );          // 55th - 56th bits (Frames per ADTS minus 1) TODO
+
+    memset( adtsHeader, 0, 7 );
+    for ( int c = 0; c < 7; ++c )
+    {
+        uint64_t mask = ( (uint64_t)0xFF << (c * 8) );
+        adtsHeader[ 6 - c ] = (char)( (ADTS & mask) >> (c * 8) );
+    }
 }

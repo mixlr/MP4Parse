@@ -42,6 +42,8 @@ namespace MP4
     {
         private:
             
+            uint32_t                  m_sampleSize;
+            std::vector< uint32_t >   *m_sampleSizes;
             
         protected:
             
@@ -50,8 +52,10 @@ namespace MP4
             
             STSZ( void );
             
+            ~STSZ();
             std::string description( void );
             void processData( MP4::BinaryStream * stream, size_t length );
+            std::vector< uint32_t >* getSampleSizes() const { return m_sampleSizes; }
     };
 }
 

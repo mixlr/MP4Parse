@@ -36,6 +36,7 @@ using namespace MP4;
 STCO::STCO( void )
 {
     this->_type.append( "STCO" );
+    m_dataOffset = 0;
 }
 
 std::string STCO::description( void )
@@ -49,5 +50,18 @@ std::string STCO::description( void )
 
 void STCO::processData( MP4::BinaryStream * stream, size_t length )
 {
-    stream->ignore( length );
+    stream->readUnsignedChar();                                           //Version
+    char flags[3];
+    memset( flags, 0, 3 );
+    stream->read( ( char* )flags, 3 );                                    //Flags pad
+    uint32_t chunkOffsets = stream->readBigEndianUnsignedInteger();       //Num chunk offsets
+    size_t ignoreLength = length - 8;
+
+    if ( chunkOffsets > 0 )
+    {
+      m_dataOffset = stream->readBigEndianUnsignedInteger();              //First chunk offset
+      ignoreLength -= 4;
+    }
+
+    stream->ignore( ignoreLength );
 }

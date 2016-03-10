@@ -54,6 +54,7 @@ namespace MP4
             {}
             
             std::string description( void );
+            void generateADTS();
     };
 }
 
