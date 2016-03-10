@@ -68,9 +68,8 @@ void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSize
     _stream->clear();
     _stream->seekg( dataOffset );
 
-    const size_t bufferSize = 4096; //TODO compute max sample size
-    char data[ bufferSize ];
-    char adtsHeader[ 7 ];
+    char data[ 8192 ];    //Max frame size is 13bits
+    char adtsHeader[ 7 ]; //ADTS header without CRC is 7 bytes
 
     std::ofstream outfile( "testdata.aac", std::ofstream::binary );
     for ( size_t s = 0; s < sampleSizes->size(); ++s )
