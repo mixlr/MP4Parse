@@ -41,7 +41,10 @@ namespace MP4
     class STSD : DataAtom
     {
         private:
-            
+
+           uint32_t m_aot;
+           uint32_t m_sampleRate;
+           uint32_t m_channelConfig;
             
         protected:
             
@@ -52,6 +55,10 @@ namespace MP4
             
             std::string description( void );
             void processData( MP4::BinaryStream * stream, size_t length );
+
+            uint32_t getAOT() { return m_aot; }
+            uint32_t getSampleRate () { return m_sampleRate; }
+            uint32_t getChannelConfig () { return m_channelConfig; }
     };
 }
 

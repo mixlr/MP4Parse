@@ -47,7 +47,75 @@ std::string STSD::description( void )
     return o.str();
 }
 
-void STSD::processData( MP4::BinaryStream * stream, size_t length )
+void STSD::processData( MP4::BinaryStream * stream, size_t length ) //TDOD refactor this function add error checking
 {
-    stream->ignore( length );
+    (void)length;
+    stream->ignore( 4 );
+    uint32_t sampleEntries = stream->readBigEndianUnsignedInteger();
+    if ( sampleEntries != 1 )
+    {
+        return;
+    }
+
+    stream->ignore( 4 );
+    char type[ 5 ];
+    stream->read( type, 4 );                //mp4a
+    type[ 4 ] = '\0';
+
+    stream->ignore( 8 );
+
+    stream->readBigEndianUnsignedShort();   //sound version?
+    stream->ignore( 18 );
+
+    //todo depends on version
+    //stream->ignore( 32 );
+
+    stream->ignore( 4 );
+    stream->read( type, 4 );                //esds
+    type[ 4 ] = '\0';
+    stream->ignore( 4 );
+
+    stream->readUnsignedChar();             //ES tag 0x03
+    uint8_t tagLen = 0;
+    do
+    {
+      tagLen = stream->readUnsignedChar();
+    }
+    while ( tagLen == 0x80 );
+
+    stream->ignore( 3 );                    //0x0
+
+    stream->readUnsignedChar();             //DecoderConfig 0x04
+    tagLen = 0;
+    do
+    {
+      tagLen = stream->readUnsignedChar();
+    }
+    while ( tagLen == 0x80 );
+
+    stream->readUnsignedChar();             //MPEG4 0x40
+    stream->readUnsignedChar();             //Audio stream 0x15
+    stream->ignore( 11 );
+
+    stream->readUnsignedChar();             //DecoderSpecific 0x05
+    tagLen = 0;
+    do
+    {
+      tagLen = stream->readUnsignedChar();
+    }
+    while ( tagLen == 0x80 );
+
+    uint16_t encFlags = stream->readBigEndianUnsignedShort();
+    m_aot = ( encFlags & 0xF800 ) >> 11;
+    m_sampleRate = ( encFlags & 0x780 ) >> 7;
+    m_channelConfig = ( encFlags & 0x78 ) >> 3;
+
+    stream->readUnsignedChar();             //0x06
+    tagLen = 0;
+    do
+    {
+      tagLen = stream->readUnsignedChar();
+    }
+    while ( tagLen == 0x80 );
+    stream->ignore( 1 );
 }
