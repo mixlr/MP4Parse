@@ -42,7 +42,7 @@ namespace MP4
     {
         private:
             
-            void generateADTS( char *adtsHeader, uint64_t sampleSize ) const;
+            void generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const;
 
             MP4::BinaryStream*  _stream;
             size_t              _length;
@@ -56,7 +56,7 @@ namespace MP4
             
             std::string description( void );
             void processData( MP4::BinaryStream * stream, size_t length );
-            void generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes ) const;
+            void generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const;
     };
 }
 

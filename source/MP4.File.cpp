@@ -32,6 +32,7 @@
 #include "MP4.File.h"
 
 #include "MP4.STSZ.h"
+#include "MP4.STSD.h"
 #include "MP4.MDAT.h"
 #include "MP4.STCO.h"
 
@@ -78,10 +79,20 @@ void File::generateADTS()
         return;
     }
 
+    atom = "STSD";
+    Atom *stsd = findChild( atom );
+    uint32_t aot, sampleRate, channelConfig;
+    if ( stsd )
+    {
+        aot = ( ( MP4::STSD* )stsd )->getAOT();
+        sampleRate = ( ( MP4::STSD* )stsd )->getSampleRate();
+        channelConfig = ( ( MP4::STSD* )stsd )->getChannelConfig();
+    }
+
     atom = "MDAT";
     Atom *mdat = findChild( atom );
     if ( mdat )
     {
-        ( ( MP4::MDAT* )mdat )->generateAAC( dataOffset, sampleSizes );
+        ( ( MP4::MDAT* )mdat )->generateAAC( dataOffset, sampleSizes, aot, sampleRate, channelConfig );
     }
 }
