@@ -36,6 +36,14 @@ using namespace MP4;
 STTS::STTS( void )
 {
     this->_type.append( "STTS" );
+    m_sampleTimes = new std::vector< uint32_t >();
+    m_sampleTimes->clear();
+    m_totalTime = 0;
+}
+
+STTS::~STTS()
+{
+    delete m_sampleTimes;
 }
 
 std::string STTS::description( void )
@@ -47,7 +55,20 @@ std::string STTS::description( void )
     return o.str();
 }
 
-void STTS::processData( MP4::BinaryStream * stream, size_t length )
+void STTS::processData( MP4::BinaryStream * stream, size_t length ) //TODO this could be way more efficient
 {
-    stream->ignore( length );
+    stream->ignore( 4 );                                                  //Version & Flags
+    uint32_t entries = stream->readBigEndianUnsignedInteger();            //Entries
+    for ( uint32_t i = 0; i < entries; ++i )
+    {
+        uint32_t timeDuplicates = stream->readBigEndianUnsignedInteger(); //Samples per entry
+        uint32_t timeDelta = stream->readBigEndianUnsignedInteger();      //Sample time delta
+        for ( uint32_t j = 0; j < timeDuplicates; ++j )
+        {
+            m_sampleTimes->push_back( timeDelta );
+            m_totalTime += timeDelta;
+        }
+    }
+
+    (void)length; //unused
 }

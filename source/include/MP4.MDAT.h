@@ -43,6 +43,7 @@ namespace MP4
         private:
             
             void generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const;
+            bool seekAACFrame( uint32_t sampleIdx );
 
             MP4::BinaryStream*  _stream;
             size_t              _length;
@@ -50,11 +51,13 @@ namespace MP4
             bool                      m_initialised;
             uint32_t                  m_dataOffset;
             std::vector< uint32_t >*  m_sampleSizes;
+            std::vector< uint32_t >*  m_sampleTimes;
             uint32_t                  m_aot;
             uint32_t                  m_sampleRate;
             uint32_t                  m_channelConfig;
             uint32_t                  m_sampleIdx;
 
+            const static int          m_kSampleRates[];
         protected:
             
             
@@ -64,9 +67,11 @@ namespace MP4
             
             std::string description( void );
             void processData( MP4::BinaryStream * stream, size_t length );
-            bool initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig );
+            bool initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, std::vector< uint32_t > *sampleTimes,
+                                         uint32_t aot, uint32_t sampleRate, uint32_t channelConfig );
             bool generateAACFrame( char *frameOut );
             void generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const;
+            bool seek( int offsetSeconds );
     };
 }
 

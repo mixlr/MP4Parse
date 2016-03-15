@@ -43,7 +43,7 @@ namespace MP4
         private:
             
             uint32_t                  m_sampleSize;
-            std::vector< uint32_t >   *m_sampleSizes;
+            std::vector< uint32_t >*  m_sampleSizes;
             
         protected:
             
