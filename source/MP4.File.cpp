@@ -32,6 +32,7 @@
 #include "MP4.File.h"
 
 #include "MP4.STSZ.h"
+#include "MP4.STTS.h"
 #include "MP4.STSD.h"
 #include "MP4.MDAT.h"
 #include "MP4.STCO.h"
@@ -93,12 +94,26 @@ bool File::initADTS()
         return false;
     }
 
+    atom = "STTS";
+    Atom *stts = findChild( atom );
+    std::vector< uint32_t > *sampleTimes = NULL;
+    uint32_t totalTime = 0;
+    if ( stts )
+    {
+        sampleTimes = ( ( MP4::STTS* )stts )->getSampleTimes();
+        totalTime = ( ( MP4::STTS* )stts )->getTotalTime();
+    }
+    else
+    {
+        return false;
+    }
+
     atom = "MDAT";
     Atom *mdat = findChild( atom );
     if ( mdat )
     {
         m_aacData = ( MP4::MDAT* )mdat;
-        return m_aacData->initialiseAACGenerator( dataOffset, sampleSizes, aot, sampleRate, channelConfig );
+        return m_aacData->initialiseAACGenerator( dataOffset, sampleSizes, sampleTimes, aot, sampleRate, channelConfig );
     }
     else
     {
@@ -109,4 +124,9 @@ bool File::initADTS()
 bool File::generateAACFrame( char *frameOut )
 {
     return m_aacData->generateAACFrame( frameOut );
+}
+
+bool File::seek( int offsetSeconds )
+{
+    return m_aacData->seek( offsetSeconds );
 }

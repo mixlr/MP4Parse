@@ -42,7 +42,9 @@ namespace MP4
     {
         private:
             
-            
+            std::vector< uint32_t >*  m_sampleTimes;
+            uint32_t                  m_totalTime;
+
         protected:
             
             
@@ -50,8 +52,11 @@ namespace MP4
             
             STTS( void );
             
+            ~STTS();
             std::string description( void );
             void processData( MP4::BinaryStream * stream, size_t length );
+            std::vector< uint32_t >* getSampleTimes() const { return m_sampleTimes; };
+            uint32_t getTotalTime() const { return m_totalTime; }
     };
 }
 

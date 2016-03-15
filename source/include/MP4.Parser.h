@@ -79,6 +79,7 @@ namespace MP4
             ~Parser( void );
 
             bool generateAACFrame( char *frameOut );
+            bool seek( int offsetSeconds );
     };
 }
 

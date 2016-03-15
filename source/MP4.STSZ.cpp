@@ -57,10 +57,7 @@ std::string STSZ::description( void )
 
 void STSZ::processData( MP4::BinaryStream * stream, size_t length )
 {
-    stream->readUnsignedChar();                                           //Version
-    char flags[3];
-    memset( flags, 0, 3 );
-    stream->read( ( char* )flags, 3 );                                    //Flags pad
+    stream->ignore( 4 );                                                  //Version & Flags
     m_sampleSize = stream->readBigEndianUnsignedInteger();                //Sample size
     uint32_t sampleCount = stream->readBigEndianUnsignedInteger();        //Sample count
     for ( uint32_t i = 0; i < sampleCount; ++i )

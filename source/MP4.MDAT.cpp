@@ -32,7 +32,9 @@
 #include "MP4.MDAT.h"
 
 using namespace MP4;
-          
+
+const int MDAT::m_kSampleRates[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350 };
+
 MDAT::MDAT( void )
 {
     this->_type.append( "MDAT" );
@@ -42,6 +44,7 @@ MDAT::MDAT( void )
     m_initialised = false;
     m_dataOffset = 0;
     m_sampleSizes = NULL;
+    m_sampleTimes = NULL;
     m_aot = 0;
     m_sampleRate = 0;
     m_channelConfig = 0;
@@ -65,7 +68,8 @@ void MDAT::processData( MP4::BinaryStream * stream, size_t length )
     stream->ignore( length );
 }
 
-bool MDAT::initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig )
+bool MDAT::initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, std::vector< uint32_t > *sampleTimes,
+                                   uint32_t aot, uint32_t sampleRate, uint32_t channelConfig )
 {
     if ( _length == 0 || _stream == NULL )
     {
@@ -83,6 +87,7 @@ bool MDAT::initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > 
 
     m_dataOffset    = dataOffset;
     m_sampleSizes   = sampleSizes;
+    m_sampleTimes   = sampleTimes;
     m_aot           = aot;
     m_sampleRate    = sampleRate;
     m_channelConfig = channelConfig;
@@ -103,11 +108,11 @@ bool MDAT::generateAACFrame( char *frameOut )
       return false;
   }
 
-  uint64_t nextSample = m_sampleSizes->at( m_sampleIdx++ );
+  uint32_t nextSample = m_sampleSizes->at( m_sampleIdx++ );
   _stream->read( frameOut + 7, nextSample );
   generateADTS( frameOut, nextSample, m_aot, m_sampleRate, m_channelConfig );
 
-  return true;
+  return !this->_stream->eof();
 }
 
 void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const
@@ -127,7 +132,7 @@ void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSize
     std::ofstream outfile( "testdata.aac", std::ofstream::binary );
     for ( size_t s = 0; s < sampleSizes->size(); ++s )
     {
-        uint64_t nextPos = sampleSizes->at( s );
+        uint32_t nextPos = sampleSizes->at( s );
         _stream->read( data, nextPos );
         generateADTS( adtsHeader, nextPos, aot, sampleRate, channelConfig );
         outfile.write( adtsHeader, 7 );
@@ -156,4 +161,50 @@ void MDAT::generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, ui
         uint64_t mask = ( (uint64_t)0xFF << (c * 8) );
         adtsHeader[ 6 - c ] = (char)( (ADTS & mask) >> (c * 8) );
     }
+}
+
+bool MDAT::seek( int offsetSeconds )
+{
+    if ( !m_initialised )
+    {
+        return false;
+    }
+
+    double timeCount = 0.0;
+    for ( size_t t = 0; t < m_sampleTimes->size(); ++t )
+    {
+        double nextTime = m_sampleTimes->at( t ) / (double)m_kSampleRates[ m_sampleRate ];
+        timeCount += nextTime;
+        if ( timeCount > offsetSeconds )
+        {
+            return seekAACFrame( t );
+        }
+    }
+
+    return false;
+}
+
+bool MDAT::seekAACFrame( uint32_t sampleIdx )
+{
+  if ( !m_initialised )
+  {
+      return false;
+  }
+
+  if ( sampleIdx >= m_sampleSizes->size() )
+  {
+      return false;
+  }
+
+  _stream->clear();
+  _stream->seekg( m_dataOffset );
+  m_sampleIdx = 0;
+
+  while ( m_sampleIdx < sampleIdx )
+  {
+      uint32_t nextSample = m_sampleSizes->at( m_sampleIdx++ );
+      _stream->ignore( nextSample );
+  }
+
+  return !this->_stream->eof();
 }

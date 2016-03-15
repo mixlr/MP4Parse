@@ -60,6 +60,7 @@ namespace MP4
             std::string description( void );
             bool initADTS();
             bool generateAACFrame( char* frameOut );
+            bool seek( int offsetSeconds );
     };
 }
 
