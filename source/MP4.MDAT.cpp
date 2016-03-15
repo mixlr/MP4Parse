@@ -38,6 +38,14 @@ MDAT::MDAT( void )
     this->_type.append( "MDAT" );
     _stream = NULL;
     _length = 0;
+
+    m_initialised = false;
+    m_dataOffset = 0;
+    m_sampleSizes = NULL;
+    m_aot = 0;
+    m_sampleRate = 0;
+    m_channelConfig = 0;
+    m_sampleIdx = 0;
 }
 
 std::string MDAT::description( void )
@@ -57,6 +65,51 @@ void MDAT::processData( MP4::BinaryStream * stream, size_t length )
     stream->ignore( length );
 }
 
+bool MDAT::initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig )
+{
+    if ( _length == 0 || _stream == NULL )
+    {
+        return false;
+    }
+
+    if ( !m_initialised )
+    {
+        m_initialised = true;
+    }
+
+    //set the stream to good state and seek to where the data is in stream
+    _stream->clear();
+    _stream->seekg( dataOffset );
+
+    m_dataOffset    = dataOffset;
+    m_sampleSizes   = sampleSizes;
+    m_aot           = aot;
+    m_sampleRate    = sampleRate;
+    m_channelConfig = channelConfig;
+    m_sampleIdx     = 0;
+
+    return true;
+}
+
+bool MDAT::generateAACFrame( char *frameOut )
+{
+  if ( !m_initialised )
+  {
+      return false;
+  }
+
+  if ( m_sampleIdx >= m_sampleSizes->size() )
+  {
+      return false;
+  }
+
+  uint64_t nextSample = m_sampleSizes->at( m_sampleIdx++ );
+  _stream->read( frameOut + 7, nextSample );
+  generateADTS( frameOut, nextSample, m_aot, m_sampleRate, m_channelConfig );
+
+  return true;
+}
+
 void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const
 {
     if ( _length == 0 || _stream == NULL )
@@ -68,7 +121,7 @@ void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSize
     _stream->clear();
     _stream->seekg( dataOffset );
 
-    char data[ 8192 ];    //Max frame size is 13bits
+    char data[ 10240 ];   //Taken from max size used in fdkaac
     char adtsHeader[ 7 ]; //ADTS header without CRC is 7 bytes
 
     std::ofstream outfile( "testdata.aac", std::ofstream::binary );
@@ -92,9 +145,9 @@ void MDAT::generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, ui
     ADTS |= ( (uint64_t)sampleRate << 34 );         // 19th - 22nd bits (Sample rate)
                                                     // 23rd bit (Private bit left as 0)
     ADTS |= ( (uint64_t)channelConfig << 30 );      // 24th - 26th bits (Channel config)
-                                        // 27th - 30th bits (Originality/Home/Copyrighted/Copyright bit left as 0)
+                                                    // 27th - 30th bits (Originality/Home/Copyrighted/Copyright bit left as 0)
     ADTS |= ( (uint64_t)((7 + sampleSize) << 13) ); // 31st - 43rd bits (Frame size + header size 7)
-    ADTS |= ( (uint64_t)2047 << 2 );                // 44th - 54th bits (Buffer fullness)
+    ADTS |= ( (uint64_t)0x7FF << 2 );               // 44th - 54th bits (Buffer fullness)
     //ADTS |= ( (uint64_t)0 );                      // 55th - 56th bits (Frames per ADTS minus 1)
 
     memset( adtsHeader, 0, 7 );

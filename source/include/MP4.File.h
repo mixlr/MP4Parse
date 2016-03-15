@@ -38,11 +38,13 @@
 
 namespace MP4
 {
+    class MDAT;
+
     class File : public ContainerAtom
     {
         private:
             
-            
+           MP4::MDAT* m_aacData;
             
         protected:
             
@@ -51,10 +53,13 @@ namespace MP4
         public:
             
             File( void ) : ContainerAtom( ( char * )"" )
-            {}
+            {
+                m_aacData = NULL;
+            }
             
             std::string description( void );
-            void generateADTS();
+            bool initADTS();
+            bool generateAACFrame( char* frameOut );
     };
 }
 
