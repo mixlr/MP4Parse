@@ -77,6 +77,8 @@ namespace MP4
             Parser( void );
             Parser( char * filename );
             ~Parser( void );
+
+            bool generateAACFrame( char *frameOut );
     };
 }
 

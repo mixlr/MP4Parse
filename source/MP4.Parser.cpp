@@ -336,13 +336,16 @@ Parser::Parser( char * filename )
         ( ( MP4::DataAtom * )atom )->processData( this->_stream, dataLength );
     }
     
-    std::cout << this->_file->description();
-
-    this->_file->generateADTS();
+    this->_file->initADTS();
 }
 
 Parser::~Parser( void )
 {
     delete this->_stream;
     delete this->_file;
+}
+
+bool Parser::generateAACFrame( char *frameOut )
+{
+    return _file->generateAACFrame( frameOut );
 }

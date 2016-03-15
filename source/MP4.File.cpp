@@ -53,7 +53,7 @@ std::string File::description( void )
     return s;
 }
 
-void File::generateADTS()
+bool File::initADTS()
 {
     std::string atom = "STCO";
     Atom *stco = findChild( atom );
@@ -62,9 +62,9 @@ void File::generateADTS()
     {
         dataOffset = ( ( MP4::STCO* )stco )->getDataOffset();
     }
-    if ( dataOffset == 0 )
+    else
     {
-        return;
+        return false;
     }
 
     atom = "STSZ";
@@ -74,9 +74,9 @@ void File::generateADTS()
     {
         sampleSizes = ( ( MP4::STSZ* )stsz )->getSampleSizes();
     }
-    if ( sampleSizes == NULL )
+    else
     {
-        return;
+        return false;
     }
 
     atom = "STSD";
@@ -88,11 +88,25 @@ void File::generateADTS()
         sampleRate = ( ( MP4::STSD* )stsd )->getSampleRate();
         channelConfig = ( ( MP4::STSD* )stsd )->getChannelConfig();
     }
+    else
+    {
+        return false;
+    }
 
     atom = "MDAT";
     Atom *mdat = findChild( atom );
     if ( mdat )
     {
-        ( ( MP4::MDAT* )mdat )->generateAAC( dataOffset, sampleSizes, aot, sampleRate, channelConfig );
+        m_aacData = ( MP4::MDAT* )mdat;
+        return m_aacData->initialiseAACGenerator( dataOffset, sampleSizes, aot, sampleRate, channelConfig );
     }
+    else
+    {
+        return false;
+    }
+}
+
+bool File::generateAACFrame( char *frameOut )
+{
+    return m_aacData->generateAACFrame( frameOut );
 }
