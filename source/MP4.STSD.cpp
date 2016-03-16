@@ -75,47 +75,46 @@ void STSD::processData( MP4::BinaryStream * stream, size_t length ) //TDOD refac
     type[ 4 ] = '\0';
     stream->ignore( 4 );
 
-    stream->readUnsignedChar();             //ES tag 0x03
-    uint8_t tagLen = 0;
-    do
-    {
-      tagLen = stream->readUnsignedChar();
-    }
-    while ( tagLen == 0x80 );
+    uint32_t padding = 0;
+    int32_t descLength = readTagLength( stream, 0x03, padding );  //ES tag 0x03
 
-    stream->ignore( 3 );                    //0x0
+    stream->ignore( 3 );                                    //0x0
 
-    stream->readUnsignedChar();             //DecoderConfig 0x04
-    tagLen = 0;
-    do
-    {
-      tagLen = stream->readUnsignedChar();
-    }
-    while ( tagLen == 0x80 );
+    readTagLength( stream, 0x04, padding );                 //DecoderConfig 0x04
+    descLength -= padding;
 
-    stream->readUnsignedChar();             //MPEG4 0x40
-    stream->readUnsignedChar();             //Audio stream 0x15
+    stream->readUnsignedChar();                             //MPEG4 0x40
+    stream->readUnsignedChar();                             //Audio stream 0x15
     stream->ignore( 11 );
 
-    stream->readUnsignedChar();             //DecoderSpecific 0x05
-    tagLen = 0;
-    do
-    {
-      tagLen = stream->readUnsignedChar();
-    }
-    while ( tagLen == 0x80 );
+    readTagLength( stream, 0x05, padding );                 //DecoderSpecific 0x05
+    descLength -= padding;
 
     uint16_t encFlags = stream->readBigEndianUnsignedShort();
     m_aot = ( encFlags & 0xF800 ) >> 11;
     m_sampleRate = ( encFlags & 0x780 ) >> 7;
     m_channelConfig = ( encFlags & 0x78 ) >> 3;
 
-    stream->readUnsignedChar();             //0x06
-    tagLen = 0;
+    stream->ignore( descLength - 22 );
+}
+
+int32_t STSD::readTagLength( MP4::BinaryStream * stream, uint8_t tag, uint32_t &paddingOut )
+{
+    uint8_t readTag = stream->readUnsignedChar();
+    if ( readTag != tag )
+    {
+        std::cout << "[STSD] 0x0" << (uint32_t)tag << " not read" << std::endl;
+        std::cout << "[STSD] 0x0" << (uint32_t)readTag << " was read instead" << std::endl;
+        return -1;
+    }
+    uint8_t tagLen = 0;
+    paddingOut = -1;
     do
     {
-      tagLen = stream->readUnsignedChar();
+        tagLen = stream->readUnsignedChar();
+        paddingOut++;
     }
     while ( tagLen == 0x80 );
-    stream->ignore( 1 );
+
+    return (int32_t)tagLen;
 }
