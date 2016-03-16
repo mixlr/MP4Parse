@@ -45,7 +45,8 @@ namespace MP4
            uint32_t m_aot;
            uint32_t m_sampleRate;
            uint32_t m_channelConfig;
-            
+
+           int32_t readTagLength( MP4::BinaryStream * stream, uint8_t tag, uint32_t &paddingOut );
         protected:
             
             

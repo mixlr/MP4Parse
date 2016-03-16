@@ -335,7 +335,7 @@ Parser::Parser( char * filename )
         
         ( ( MP4::DataAtom * )atom )->processData( this->_stream, dataLength );
     }
-    
+
     this->_file->initADTS();
 }
 
