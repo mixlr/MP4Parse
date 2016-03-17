@@ -36,6 +36,7 @@ using namespace MP4;
 STSD::STSD( void )
 {
     this->_type.append( "STSD" );
+    m_valid = true;
 }
 
 std::string STSD::description( void )
@@ -47,47 +48,31 @@ std::string STSD::description( void )
     return o.str();
 }
 
-void STSD::processData( MP4::BinaryStream * stream, size_t length ) //TODO refactor this function add error checking
+void STSD::processData( MP4::BinaryStream * stream, size_t length )
 {
     (void)length;
     stream->ignore( 4 );
-    uint32_t sampleEntries = stream->readBigEndianUnsignedInteger();
-    if ( sampleEntries != 1 )
-    {
-        return;
-    }
+    m_valid &= stream->readBigEndianUnsignedInteger() == 1;
 
     stream->ignore( 4 );
-    char type[ 5 ];
-    stream->read( type, 4 );                //mp4a
-    type[ 4 ] = '\0';
-
-    stream->ignore( 8 );
-
-    stream->readBigEndianUnsignedShort();   //sound version?
-    stream->ignore( 18 );
-
-    //todo depends on version
-    //stream->ignore( 32 );
-
-    stream->ignore( 4 );
-    stream->read( type, 4 );                //esds
-    type[ 4 ] = '\0';
+    m_valid &= readBoxType( stream, "mp4a" );
+    stream->ignore( 32 );
+    m_valid &= readBoxType( stream, "esds" );
     stream->ignore( 4 );
 
     uint32_t padding = 0;
     int32_t descLength = readTagLength( stream, 0x03, padding );  //ES tag 0x03
+    m_valid &= ( descLength != -1 );
 
-    stream->ignore( 3 );                                    //0x0
-
-    readTagLength( stream, 0x04, padding );                 //DecoderConfig 0x04
+    stream->ignore( 3 );
+    m_valid &= ( readTagLength( stream, 0x04, padding ) != -1 );  //DecoderConfig 0x04
     descLength -= padding;
 
-    stream->readUnsignedChar();                             //MPEG4 0x40
-    stream->readUnsignedChar();                             //Audio stream 0x15
+    m_valid &= ( stream->readUnsignedChar() == 0x40 );            //MPEG4 0x40
+    m_valid &= ( stream->readUnsignedChar() == 0x15 );            //Audio stream 0x15
     stream->ignore( 11 );
 
-    readTagLength( stream, 0x05, padding );                 //DecoderSpecific 0x05
+    m_valid &= ( readTagLength( stream, 0x05, padding ) != -1 );  //DecoderSpecific 0x05
     descLength -= padding;
 
     uint16_t encFlags = stream->readBigEndianUnsignedShort();
@@ -117,4 +102,17 @@ int32_t STSD::readTagLength( MP4::BinaryStream * stream, uint8_t tag, uint32_t &
     while ( tagLen == 0x80 );
 
     return (int32_t)tagLen;
+}
+
+bool STSD::readBoxType( MP4::BinaryStream * stream, std::string name )
+{
+    char type[ 5 ];
+    stream->read( type, 4 );
+    type[ 4 ] = '\0';
+    std::string readName( type );
+
+    std::transform( name.begin(), name.end(), name.begin(), ::tolower );
+    std::transform( readName.begin(), readName.end(), readName.begin(), ::tolower );
+
+    return name == readName;
 }

@@ -59,7 +59,7 @@ bool File::initialiseM4ADecoding()
     std::string atom = "STCO";
     Atom *stco = findChild( atom );
     uint32_t dataOffset = 0;
-    if ( stco )
+    if ( stco && stco->isValid() )
     {
         dataOffset = ( ( MP4::STCO* )stco )->getDataOffset();
     }
@@ -71,7 +71,7 @@ bool File::initialiseM4ADecoding()
     atom = "STSZ";
     Atom *stsz = findChild( atom );
     std::vector< uint32_t > *sampleSizes = NULL;
-    if ( stsz )
+    if ( stsz && stsz->isValid() )
     {
         sampleSizes = ( ( MP4::STSZ* )stsz )->getSampleSizes();
     }
@@ -83,7 +83,7 @@ bool File::initialiseM4ADecoding()
     atom = "STSD";
     Atom *stsd = findChild( atom );
     uint32_t aot, sampleRate, channelConfig;
-    if ( stsd )
+    if ( stsd && stsd->isValid() )
     {
         aot = ( ( MP4::STSD* )stsd )->getAOT();
         sampleRate = ( ( MP4::STSD* )stsd )->getSampleRate();
@@ -98,7 +98,7 @@ bool File::initialiseM4ADecoding()
     Atom *stts = findChild( atom );
     TimeData *sampleTimes = NULL;
     uint32_t totalTime = 0;
-    if ( stts )
+    if ( stts  && stts->isValid() )
     {
         sampleTimes = ( ( MP4::STTS* )stts )->getSampleTimes();
         totalTime = ( ( MP4::STTS* )stts )->getTotalTime();
@@ -110,7 +110,7 @@ bool File::initialiseM4ADecoding()
 
     atom = "MDAT";
     Atom *mdat = findChild( atom );
-    if ( mdat )
+    if ( mdat && mdat->isValid() )
     {
         m_aacData = ( MP4::MDAT* )mdat;
         return m_aacData->initialiseAACGenerator( dataOffset, sampleSizes, sampleTimes, aot, sampleRate, channelConfig );
