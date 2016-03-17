@@ -47,6 +47,10 @@ namespace MP4
            uint32_t m_channelConfig;
 
            int32_t readTagLength( MP4::BinaryStream * stream, uint8_t tag, uint32_t &paddingOut );
+           bool    readBoxType( MP4::BinaryStream * stream, std::string name );
+
+           bool     m_valid;
+
         protected:
             
             
@@ -60,6 +64,8 @@ namespace MP4
             uint32_t getAOT() { return m_aot; }
             uint32_t getSampleRate () { return m_sampleRate; }
             uint32_t getChannelConfig () { return m_channelConfig; }
+
+            virtual bool isValid() { return m_valid; }
     };
 }
 

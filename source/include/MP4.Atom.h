@@ -55,6 +55,7 @@ namespace MP4
             std::string getType( void );
             
             virtual std::string description( void ) = 0;
+            virtual bool isValid() { return true; }
     };
 }
 
