@@ -47,7 +47,7 @@ std::string STSD::description( void )
     return o.str();
 }
 
-void STSD::processData( MP4::BinaryStream * stream, size_t length ) //TDOD refactor this function add error checking
+void STSD::processData( MP4::BinaryStream * stream, size_t length ) //TODO refactor this function add error checking
 {
     (void)length;
     stream->ignore( 4 );

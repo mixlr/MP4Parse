@@ -50,10 +50,7 @@ std::string STCO::description( void )
 
 void STCO::processData( MP4::BinaryStream * stream, size_t length )
 {
-    stream->readUnsignedChar();                                           //Version
-    char flags[3];
-    memset( flags, 0, 3 );
-    stream->read( ( char* )flags, 3 );                                    //Flags pad
+    stream->ignore( 4 );                                                  //Flags & Version
     uint32_t chunkOffsets = stream->readBigEndianUnsignedInteger();       //Num chunk offsets
     size_t ignoreLength = length - 8;
 
