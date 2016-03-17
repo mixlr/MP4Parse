@@ -68,7 +68,7 @@ void MDAT::processData( MP4::BinaryStream * stream, size_t length )
     stream->ignore( length );
 }
 
-bool MDAT::initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, std::vector< uint32_t > *sampleTimes,
+bool MDAT::initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, TimeData *sampleTimes,
                                    uint32_t aot, uint32_t sampleRate, uint32_t channelConfig )
 {
     if ( _length == 0 || _stream == NULL )
@@ -171,13 +171,20 @@ bool MDAT::seek( int offsetSeconds )
     }
 
     double timeCount = 0.0;
+    uint32_t sampleIdx = 0;
     for ( size_t t = 0; t < m_sampleTimes->size(); ++t )
     {
-        double nextTime = m_sampleTimes->at( t ) / (double)m_kSampleRates[ m_sampleRate ];
-        timeCount += nextTime;
-        if ( timeCount > offsetSeconds )
+        uint32_t timeDuplicates = m_sampleTimes->at( t ).first;
+        uint32_t timeDelta = m_sampleTimes->at( t ).second;
+        for ( uint32_t d = 0; d < timeDuplicates; ++d )
         {
-            return seekAACFrame( t );
+            double nextTime = timeDelta / (double)m_kSampleRates[ m_sampleRate ];
+            timeCount += nextTime;
+            sampleIdx++;
+            if ( timeCount > offsetSeconds )
+            {
+                return seekAACFrame( sampleIdx );
+            }
         }
     }
 
@@ -196,10 +203,12 @@ bool MDAT::seekAACFrame( uint32_t sampleIdx )
       return false;
   }
 
+  //reset stream to beginning
   _stream->clear();
   _stream->seekg( m_dataOffset );
   m_sampleIdx = 0;
 
+  //skip frames until we find our sampleIdx
   while ( m_sampleIdx < sampleIdx )
   {
       uint32_t nextSample = m_sampleSizes->at( m_sampleIdx++ );

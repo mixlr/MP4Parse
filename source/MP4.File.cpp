@@ -96,7 +96,7 @@ bool File::initialiseM4ADecoding()
 
     atom = "STTS";
     Atom *stts = findChild( atom );
-    std::vector< uint32_t > *sampleTimes = NULL;
+    TimeData *sampleTimes = NULL;
     uint32_t totalTime = 0;
     if ( stts )
     {
