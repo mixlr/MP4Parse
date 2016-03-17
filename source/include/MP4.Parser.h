@@ -78,6 +78,7 @@ namespace MP4
             Parser( char * filename );
             ~Parser( void );
 
+            bool initialiseM4ADecoding();
             bool generateAACFrame( char *frameOut );
             bool seek( int offsetSeconds );
     };

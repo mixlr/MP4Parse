@@ -335,8 +335,6 @@ Parser::Parser( char * filename )
         
         ( ( MP4::DataAtom * )atom )->processData( this->_stream, dataLength );
     }
-
-    this->_file->initADTS();
 }
 
 Parser::~Parser( void )
@@ -345,12 +343,17 @@ Parser::~Parser( void )
     delete this->_file;
 }
 
+bool Parser::initialiseM4ADecoding()
+{
+    return this->_file->initialiseM4ADecoding();
+}
+
 bool Parser::generateAACFrame( char *frameOut )
 {
-    return _file->generateAACFrame( frameOut );
+    return this->_file->generateAACFrame( frameOut );
 }
 
 bool Parser::seek( int offsetSeconds )
 {
-    return _file->seek( offsetSeconds );
+    return this->_file->seek( offsetSeconds );
 }
