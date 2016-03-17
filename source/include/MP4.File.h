@@ -58,7 +58,7 @@ namespace MP4
             }
             
             std::string description( void );
-            bool initADTS();
+            bool initialiseM4ADecoding();
             bool generateAACFrame( char* frameOut );
             bool seek( int offsetSeconds );
     };

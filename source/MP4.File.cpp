@@ -54,7 +54,7 @@ std::string File::description( void )
     return s;
 }
 
-bool File::initADTS()
+bool File::initialiseM4ADecoding()
 {
     std::string atom = "STCO";
     Atom *stco = findChild( atom );
@@ -123,10 +123,24 @@ bool File::initADTS()
 
 bool File::generateAACFrame( char *frameOut )
 {
-    return m_aacData->generateAACFrame( frameOut );
+    if ( m_aacData )
+    {
+        return m_aacData->generateAACFrame( frameOut );
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool File::seek( int offsetSeconds )
 {
-    return m_aacData->seek( offsetSeconds );
+    if ( m_aacData )
+    {
+        return m_aacData->seek( offsetSeconds );
+    }
+    else
+    {
+        return false;
+    }
 }
