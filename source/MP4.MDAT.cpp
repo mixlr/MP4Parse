@@ -115,31 +115,6 @@ bool MDAT::generateAACFrame( char *frameOut )
   return !this->_stream->eof();
 }
 
-void MDAT::generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const
-{
-    if ( _length == 0 || _stream == NULL )
-    {
-        return;
-    }
-
-    //set the stream to good state and seek to where the data is in stream
-    _stream->clear();
-    _stream->seekg( dataOffset );
-
-    char data[ 10240 ];   //Taken from max size used in fdkaac
-    char adtsHeader[ 7 ]; //ADTS header without CRC is 7 bytes
-
-    std::ofstream outfile( "testdata.aac", std::ofstream::binary );
-    for ( size_t s = 0; s < sampleSizes->size(); ++s )
-    {
-        uint32_t nextPos = sampleSizes->at( s );
-        _stream->read( data, nextPos );
-        generateADTS( adtsHeader, nextPos, aot, sampleRate, channelConfig );
-        outfile.write( adtsHeader, 7 );
-        outfile.write( data, nextPos );
-    }
-}
-
 void MDAT::generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const
 {
     uint64_t ADTS = 0;                              // Using lowest 56 bits
