@@ -353,7 +353,7 @@ bool Parser::generateAACFrame( char *frameOut )
     return this->_file->generateAACFrame( frameOut );
 }
 
-bool Parser::seek( int offsetSeconds )
+bool Parser::seek( int offsetSeconds, int sampleRate )
 {
-    return this->_file->seek( offsetSeconds );
+    return this->_file->seek( offsetSeconds, sampleRate );
 }

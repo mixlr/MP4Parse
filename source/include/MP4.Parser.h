@@ -80,7 +80,7 @@ namespace MP4
 
             bool initialiseM4ADecoding();
             bool generateAACFrame( char *frameOut );
-            bool seek( int offsetSeconds );
+            bool seek( int offsetSeconds, int sampleRate );
     };
 }
 
