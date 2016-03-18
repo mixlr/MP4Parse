@@ -163,7 +163,7 @@ void MDAT::generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, ui
     }
 }
 
-bool MDAT::seek( int offsetSeconds )
+bool MDAT::seek( int offsetSeconds, int sampleRate )
 {
     if ( !m_initialised )
     {
@@ -178,7 +178,7 @@ bool MDAT::seek( int offsetSeconds )
         uint32_t timeDelta = m_sampleTimes->at( t ).second;
         for ( uint32_t d = 0; d < timeDuplicates; ++d )
         {
-            double nextTime = timeDelta / (double)m_kSampleRates[ m_sampleRate ];
+            double nextTime = timeDelta / (double)sampleRate;
             timeCount += nextTime;
             sampleIdx++;
             if ( timeCount > offsetSeconds )

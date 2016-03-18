@@ -133,11 +133,11 @@ bool File::generateAACFrame( char *frameOut )
     }
 }
 
-bool File::seek( int offsetSeconds )
+bool File::seek( int offsetSeconds, int sampleRate )
 {
     if ( m_aacData )
     {
-        return m_aacData->seek( offsetSeconds );
+        return m_aacData->seek( offsetSeconds, sampleRate );
     }
     else
     {
