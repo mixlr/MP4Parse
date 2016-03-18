@@ -71,8 +71,7 @@ namespace MP4
             bool initialiseAACGenerator( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, TimeData *sampleTimes,
                                          uint32_t aot, uint32_t sampleRate, uint32_t channelConfig );
             bool generateAACFrame( char *frameOut );
-            void generateAAC( uint32_t dataOffset, std::vector< uint32_t > *sampleSizes, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const;
-            bool seek( int offsetSeconds, int sampleRate );
+            Bool seek( int offsetSeconds, int sampleRate );
     };
 }
 
