@@ -112,7 +112,7 @@ bool MDAT::generateAACFrame( char *frameOut )
   _stream->read( frameOut + 7, nextSample );
   generateADTS( frameOut, nextSample, m_aot, m_sampleRate, m_channelConfig );
 
-  return !this->_stream->eof();
+  return !this->_stream->eof() && this->_stream->good();
 }
 
 void MDAT::generateADTS( char *adtsHeader, uint64_t sampleSize, uint32_t aot, uint32_t sampleRate, uint32_t channelConfig ) const
@@ -190,5 +190,5 @@ bool MDAT::seekAACFrame( uint32_t sampleIdx )
       _stream->ignore( nextSample );
   }
 
-  return !this->_stream->eof();
+  return !this->_stream->eof() && this->_stream->good();
 }
