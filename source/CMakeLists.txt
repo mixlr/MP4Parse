@@ -65,3 +65,6 @@ target_sources(mp4parse
     ${CMAKE_CURRENT_LIST_DIR}/MP4.XML.cpp
     ${CMAKE_CURRENT_LIST_DIR}/mp4parse.cpp
 )
+
+install(TARGETS mp4parse ARCHIVE DESTINATION lib/)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/ DESTINATION include/mp4parse FILES_MATCHING PATTERN "*.h")
