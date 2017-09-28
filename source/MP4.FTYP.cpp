@@ -30,6 +30,8 @@
 /* $Id$ */
 
 #include "MP4.FTYP.h"
+#include <stdio.h>
+#include <string.h>
 
 using namespace MP4;
           

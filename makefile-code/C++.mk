@@ -64,4 +64,4 @@ LIBTOOL                 = libtool
 # Arguments for the compiler tools
 #-------------------------------------------------------------------------------
 
-ARGS_CC                 = -Os -pedantic -Werror -Wall -Wextra -Wmissing-braces -Wmissing-field-initializers -Wmissing-prototypes -Wparentheses -Wreturn-type -Wshadow -Wsign-compare -Wswitch -Wuninitialized -Wunknown-pragmas -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable
+ARGS_CC                 = -Os -pedantic -Wall -Wextra -Wmissing-braces -Wmissing-field-initializers -Wparentheses -Wreturn-type -Wshadow -Wsign-compare -Wswitch -Wuninitialized -Wunknown-pragmas -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable

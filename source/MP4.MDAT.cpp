@@ -30,6 +30,8 @@
 /* $Id$ */
 
 #include "MP4.MDAT.h"
+#include <stdio.h>
+#include <string.h>
 
 using namespace MP4;
 

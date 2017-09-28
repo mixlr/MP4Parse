@@ -31,6 +31,8 @@
 
 #include "MP4.Parser.h"
 #include "atoms.h"
+#include <stdio.h>
+#include <string.h>
 
 using namespace MP4;
 
